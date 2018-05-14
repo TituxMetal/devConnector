@@ -42,7 +42,7 @@ router.post('/register', (req, res) => {
     const avatar = gravatar.url(email, {
       s: 200, // Size
       r: 'pg', // Rating
-      d: 'mm' // Default
+      d: 'identicon' // Default
     })
     const newUser = new User({
       name,
