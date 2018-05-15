@@ -240,4 +240,20 @@ router.delete('/experience/:experienceId', passport.authenticate('jwt', { sessio
   }).catch(err => res.status(500).json({ server: 'Something went wrong' }))
 })
 
+/*
+  @route    Delete api/profile/education/:educationId
+  @desc     Delete education from profile
+  @access   Private
+*/
+router.delete('/education/:educationId', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.findOne({ user: req.user.id }).then(profile => {
+    profile.education = profile.education
+      .filter(education => education.id !== req.params.educationId)
+    
+    profile.save()
+      .then(profile => res.json(profile))
+      .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+  }).catch(err => res.status(500).json({ server: 'Something went wrong' }))
+})
+
 module.exports = router
