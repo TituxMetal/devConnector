@@ -5,6 +5,7 @@ const passport = require('passport')
 
 // Load Porfile Validation
 const validateProfileInput = require('../../validation/profile')
+const validateExperienceInput = require('../../validation/experience')
 
 // Load Profile Model
 const Profile = require('../../models/Profile')
@@ -158,6 +159,37 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
       ).then(profile => res.json(profile))
       .catch(err => res.status(500).json({ server: 'Something went wrong' }))
     }).catch(err => res.status(500).json({ server: 'Something went wrong' }))
+  }).catch(err => res.status(500).json({ server: 'Something went wrong' }))
+})
+
+/*
+  @route    POST api/profile/experience
+  @desc     Add experience to profile
+  @access   Private
+*/
+router.post('/experience', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { errors, isValid } = validateExperienceInput(req.body)
+  
+  // Check Validation
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
+  
+  Profile.findOne({ user: req.user.id }).then(profile => {
+    const newExperience = {
+      title: req.body.title,
+      company: req.body.company,
+      location: req.body.location,
+      current: req.body.current,
+      description: req.body.description,
+      from: req.body.from,
+      to: req.body.to
+    }
+    
+    profile.experience.unshift(newExperience)
+    profile.save()
+      .then(profile => res.json(profile))
+      .catch(err => res.status(500).json({ server: 'Something went wrong' }))
   }).catch(err => res.status(500).json({ server: 'Something went wrong' }))
 })
 
