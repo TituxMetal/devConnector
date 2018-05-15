@@ -6,6 +6,7 @@ const passport = require('passport')
 // Load Porfile Validation
 const validateProfileInput = require('../../validation/profile')
 const validateExperienceInput = require('../../validation/experience')
+const validateEducationInput = require('../../validation/education')
 
 // Load Profile Model
 const Profile = require('../../models/Profile')
@@ -187,6 +188,36 @@ router.post('/experience', passport.authenticate('jwt', { session: false }), (re
     }
     
     profile.experience.unshift(newExperience)
+    profile.save()
+      .then(profile => res.json(profile))
+      .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+  }).catch(err => res.status(500).json({ server: 'Something went wrong' }))
+})
+
+/*
+  @route    POST api/profile/education
+  @desc     Add education to profile
+  @access   Private
+*/
+router.post('/education', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { errors, isValid } = validateEducationInput(req.body)
+  
+  // Check Validation
+  if (!isValid) {
+    return res.status(400).json(errors)
+  }
+  
+  Profile.findOne({ user: req.user.id }).then(profile => {
+    const newEducation = {
+      school: req.body.school,
+      degree: req.body.degree,
+      fieldofstudy: req.body.fieldofstudy,
+      description: req.body.description,
+      from: req.body.from,
+      to: req.body.to
+    }
+    
+    profile.education.unshift(newEducation)
     profile.save()
       .then(profile => res.json(profile))
       .catch(err => res.status(500).json({ server: 'Something went wrong' }))
