@@ -122,6 +122,32 @@ router.post('/like/:postId', passport.authenticate('jwt', { session: false }), (
 })
 
 /*
+  @route    DELETE api/posts/comment/:postId/:commentId
+  @desc     Delete a comment from a post
+  @access   Private
+*/
+router.delete('/comment/:postId/:commentId', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Post.findById(req.params.postId).then(post => {
+    const removeIndex = post.comments
+      .map(comment => comment.id.toString())
+      .indexOf(req.params.commentId)
+
+    if (removeIndex < 0) {
+      return res.status(404).json({ commentNotFound: 'Comment does not exists' })
+    }
+
+    if (post.comments[removeIndex].user.toString() !== req.user.id) {
+      return res.status(401).json({ notAuthorized: 'User not authorized' })
+    }
+    
+    post.comments.splice(removeIndex, 1)
+    post.save()
+      .then(post => res.json(post))
+      .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+  }).catch(err => res.status(404).json({ postNotFound: 'Post does not exists' }))
+})
+
+/*
   @route    DELETE api/posts/:postId
   @desc     Delete post by ID
   @access   Private
