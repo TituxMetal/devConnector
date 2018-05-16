@@ -74,4 +74,22 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     .catch(err => res.status(500).json({ server: 'Something went wrong' }))
 })
 
+/*
+  @route    DELETE api/posts/:postId
+  @desc     Delete post by ID
+  @access   Private
+*/
+router.delete('/:postId', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Post.findById(req.params.postId)
+    .then(post => {
+      if (post.user.toString() !== req.user.id) {
+        return res.status(401).json({ notAuthorized: 'User not authorized' })
+      }
+      return post.remove()
+        .then(() => res.json({ success: true }))
+        .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+    })
+    .catch(err => res.status(404).json({ postNotFound: 'No post found' }))
+})
+
 module.exports = router
