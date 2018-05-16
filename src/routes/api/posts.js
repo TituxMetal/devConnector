@@ -32,6 +32,24 @@ router.get('/', (req, res) => {
 })
 
 /*
+  @route    GET api/posts/:postId
+  @desc     Get post by ID
+  @access   Public
+*/
+router.get('/:postId', (req, res) => {
+  const errors = {}
+
+  Post.findById(req.params.postId).then(post => {
+    if (!post) {
+      errors.nopost = 'There is no post'
+      return res.status(404).json(errors)
+    }
+
+    return res.json(post)
+  }).catch(err => res.status(500).json({ post: 'Invalid ID' }))
+})
+
+/*
   @route    POST api/posts
   @desc     Create post
   @access   Private
