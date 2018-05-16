@@ -75,6 +75,25 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
 })
 
 /*
+  @route    POST api/posts/like/:postId
+  @desc     Like / Unlike a post
+  @access   Private
+*/
+router.post('/like/:postId', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Post.findById(req.params.postId)
+    .then(post => {
+      const postLikes = post.likes.filter(like => like.user.toString() === req.user.id)
+
+      postLikes.length > 0 ? post.likes.pop({ user: req.user.id }) : post.likes.push({ user: req.user.id })
+      
+      post.save()
+        .then(post => res.json(post))
+        .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+    })
+    .catch(err => res.status(404).json({ postNotFound: 'No post found' }))
+})
+
+/*
   @route    DELETE api/posts/:postId
   @desc     Delete post by ID
   @access   Private
