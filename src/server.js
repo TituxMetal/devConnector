@@ -1,10 +1,18 @@
-const env = require('dotenv').config()
 const express = require('express')
+const morgan = require('morgan')
+const bodyParser = require('body-parser')
 
 const app = express()
 
-app.get('/', (req, res) => res.send('Hello World!'))
+if (!process.env.NODE_ENV === 'test') {
+  app.use(morgan('dev'))
+}
 
-const port = process.env.port || 5000
+// Body parser middlewares
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
-app.listen(port, () => console.log(`Server running on ${port}`))
+// Use Routes
+app.use('/api/users', require('./routes/api/users'))
+
+module.exports = app
