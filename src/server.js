@@ -1,6 +1,9 @@
 const express = require('express')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
+const env = require('dotenv').config()
+
+const dbConfig = require('./database/mongoose')
 
 const app = express()
 
