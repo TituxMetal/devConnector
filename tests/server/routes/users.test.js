@@ -14,17 +14,13 @@ describe('Users route', () => {
   const preSave = { name: 'Test name', email: 'sometest@gmail.com', password: 'testPassword'}
 
   beforeAll(async () => {
-    return await User.remove({}).then(() => {
-      request(server)
-        .post(register)
-        .send(preSave)
-        .then(response => {
-          expect(response.status).toEqual(200)
-          expect(response.body).toExist
-          expect(response.body.password).not.toBe(preSave.password)
-        })
-      console.log('\n User Created')
-    })
+    const response = await request(server)
+      .post(register)
+      .send(preSave)
+    
+    expect(response.status).toEqual(200)
+    expect(response.body).toExist
+    expect(response.body.password).not.toBe(preSave.password)
   })
 
   afterAll(async () => {
@@ -46,6 +42,13 @@ describe('Users route', () => {
       expect(newUser.length).toBe(1)
     })
 
+    it('should create a new user with a hashed password', async () => {
+      await request(server).post(register).send(user)
+
+      const savedUser = await User.findByEmail(user.email)
+      expect(savedUser.password).not.toEqual(user.password)
+    })
+
     it('should return 400 if no password given', async () => {
       const invalidUser = { name: 'Invalid', email: 'inval@id.com' }
       const res = await request(server).post(register).send(invalidUser)
@@ -54,7 +57,7 @@ describe('Users route', () => {
       expect(res.body.errors.password).toExist
       expect(res.body.errors.password).toEqual(`"Password field" is required`)
       
-      const noUser = await User.findOne({ email: invalidUser.email })
+      const noUser = await User.findByEmail(invalidUser.email)
       expect(noUser).toBe(null)
     })
 
@@ -68,7 +71,7 @@ describe('Users route', () => {
       expect(res.body.errors.email).toEqual(`"Email field" must be a valid email`)
       expect(res.body.errors.password).toEqual(`"Password field" length must be at least 6 characters long`)
       
-      const noUser = await User.findOne({ email: invalidUser.email })
+      const noUser = await User.findByEmail(invalidUser.email)
       expect(noUser).toBe(null)
     })
     
