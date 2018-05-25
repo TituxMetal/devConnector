@@ -37,6 +37,14 @@ userSchema.pre('save', async function (next) {
   }
 })
 
+userSchema.methods.isValidPassword = async function (userPassword) {
+  try {
+    return await bcrypt.compare(userPassword, this.password)
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 userSchema.statics.findByEmail = async email => {
   try {
     return await User.findOne({ email })
