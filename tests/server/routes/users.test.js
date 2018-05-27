@@ -159,7 +159,7 @@ describe('Users route', () => {
     })
   })
 
-  describe('POST /api/users/itWorks', () => {
+  describe('GET /api/users/itWorks', () => {
     it('should return 200 and message Users Works', async () => {
       const res = await request(server).get(test)
 
