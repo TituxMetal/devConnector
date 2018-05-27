@@ -47,6 +47,13 @@ const UserController = {
     const token = signToken(foundUser)
     
     res.status(200).json({ token })
+  },
+  current: async (req, res, next) => {
+    return res.status(200).json({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email
+    })
   }
 }
 
