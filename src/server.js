@@ -17,5 +17,6 @@ app.use(bodyParser.json())
 
 // Use Routes
 app.use('/api/users', require('./routes/api/users'))
+app.use('/api/profile', require('./routes/api/profile'))
 
 module.exports = app
