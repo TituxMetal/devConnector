@@ -10,6 +10,7 @@ const User = require(root + '/models/User')
 describe('Users route', () => {
   const register = '/api/users/register'
   const login = '/api/users/login'
+  const current = '/api/users/current'
   const test = '/api/users/itWorks'
   const user = { email: faker.internet.email(), password: faker.internet.password() }
   const preSave = { email: 'sometest@gmail.com', password: 'testPassword'}
@@ -126,7 +127,37 @@ describe('Users route', () => {
       expect(res.body.token).toExist
     })
   })
+  
+  describe('GET /api/users/current', () => {
+    beforeAll(async () => {
+      const res = await request(server).post(login).send(preSave)
 
+      expect(res.status).toEqual(200)
+      expect(res.body.token).toExist
+      token = res.body.token
+    })
+
+    it('should return 401 if invalid token', async () => {
+      let invalidToken = 'invalidTokenForTesting'
+      const res = await request(server).get(current).set('Authorization', `Bearer ${invalidToken}`)
+
+      expect(res.status).toEqual(401)
+    })
+
+    it('should return 401 if no token', async () => {
+      const res = await request(server).get(current)
+
+      expect(res.status).toEqual(401)
+    })
+
+    it('should return 200 and user info if ok', async () => {
+      const res = await request(server).get(current).set('Authorization', `Bearer ${token}`)
+
+      expect(res.status).toEqual(200)
+      expect(res.body.name).toEqual('Test name')
+      expect(res.body.email).toEqual(preSave.email)
+    })
+  })
 
   describe('POST /api/users/itWorks', () => {
     it('should return 200 and message Users Works', async () => {
