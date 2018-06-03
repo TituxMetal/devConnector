@@ -8,7 +8,7 @@ const ProfileController = {
     const data = req.value.body
     const profile = new Profile(data)
     profile.user = req.user.id
-    
+
     if (typeof profile.skills !== undefined) {
       profile.skills = req.value.body.skills.split(',').map(skill => skill.trim())
     }
@@ -17,6 +17,12 @@ const ProfileController = {
     if (isProfile) {
       return res.status(400).json({ errors: { profile: 'Profile already exists for this user' } })
     }
+
+    const isHandle = await Profile.findOne({ handle: profile.handle })
+    if (isHandle && isHandle.user.id !== profile.user) {
+      return res.status(400).json({ errors: { handle: 'Handle already in use' } })
+    }
+
     await profile.save()
     await res.status(200).json(profile)
   }
