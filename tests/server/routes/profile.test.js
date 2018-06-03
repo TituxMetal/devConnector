@@ -137,6 +137,20 @@ describe('Profile route', () => {
       expect(res.status).toBe(400)
       expect(res.body.errors.profile).toEqual('Profile already exists for this user')
     })
+
+    it('should return 400 if handle is already in use', async () => {
+      const newUser = {
+        name: 'Test User',
+        email: faker.internet.email(),
+        password: faker.internet.password()
+      }
+      await new User(newUser).save()
+      const userLogin = await request(server).post('/api/users/login').send({ email: newUser.email, password: newUser.password })
+      const res = await request(server).post(create).send(fakeProfile).set('Authorization', `Bearer ${userLogin.body.token}`)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.handle).toEqual(`Handle already in use`)
+    })
   })
 
   describe('GET /api/profile/itWorks', () => {
