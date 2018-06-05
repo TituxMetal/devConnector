@@ -12,7 +12,7 @@ let token
 
 describe('Profile route', () => {
   const test = '/api/profile/itWorks'
-  const create = '/api/profile/'
+  const rootUri = '/api/profile/'
   const fakeUser = {
     name: 'Fake User',
     email: faker.internet.email(),
@@ -43,14 +43,14 @@ describe('Profile route', () => {
   describe('POST /api/profile/', () => {
     it('should return 401 if no token header given', async () => {
       const profile = { ...fakeProfile }
-      const res = await request(server).post(create).send(profile)
+      const res = await request(server).post(rootUri).send(profile)
 
       expect(res.status).toBe(401)
     })
 
     it('should return 400 if missing required fields', async () => {
       const requiredFields = ['handle', 'status', 'skills', 'bio']
-      const res = await request(server).post(create).send({}).set('Authorization', token)
+      const res = await request(server).post(rootUri).send({}).set('Authorization', token)
 
       expect(res.status).toEqual(400)
       requiredFields.map(field => {
@@ -61,7 +61,7 @@ describe('Profile route', () => {
 
     it('should return 400 if invalid website given', async () => {
       const profile = { ...fakeProfile, website: 'invalid' }
-      const res = await request(server).post(create).send(profile).set('Authorization', token)
+      const res = await request(server).post(rootUri).send(profile).set('Authorization', token)
       
       expect(res.status).toEqual(400)
       expect(res.body.errors.website).toEqual(`"Website field" must be a valid uri`)
@@ -74,7 +74,7 @@ describe('Profile route', () => {
         social[field] = 'test'
       })
       const profile = { ...fakeProfile, social }
-      const res = await request(server).post(create).send(profile).set('Authorization', token)
+      const res = await request(server).post(rootUri).send(profile).set('Authorization', token)
 
       expect(res.status).toEqual(400)
       socialFields.map(field => {
@@ -90,7 +90,7 @@ describe('Profile route', () => {
         invalidFields[field] = 'ab'
       })
       const profile = { ...invalidFields }
-      const res = await request(server).post(create).send(profile).set('Authorization', token)
+      const res = await request(server).post(rootUri).send(profile).set('Authorization', token)
 
       expect(res.status).toEqual(400)
       fields.map(field => {
@@ -103,7 +103,7 @@ describe('Profile route', () => {
       const longHandle = 'loremipsumdolorsitametconsecteturadipisic'
       const { handle, status, skills, bio } = { ...fakeProfile }
       const profile = { handle: longHandle, status, skills, bio }
-      const res = await request(server).post(create).send(profile).set('Authorization', token)
+      const res = await request(server).post(rootUri).send(profile).set('Authorization', token)
 
       expect(res.status).toEqual(400)
       expect(res.body.errors.handle).toEqual(`"Handle field" length must be less than or equal to 40 characters long`)
@@ -111,7 +111,7 @@ describe('Profile route', () => {
 
     it('should create a profile in database', async () => {
       const profile = { ...fakeProfile }
-      const res = await request(server).post(create).send(profile).set('Authorization', token)
+      const res = await request(server).post(rootUri).send(profile).set('Authorization', token)
       profile.skills = profile.skills.split(',').map(skill => skill.trim())
       
       expect(res.status).toEqual(200)
@@ -132,7 +132,7 @@ describe('Profile route', () => {
 
     it('should return 400 if profile already exists', async () => {
       const profile = { ...fakeProfile }
-      const res = await request(server).post(create).send(profile).set('Authorization', token)
+      const res = await request(server).post(rootUri).send(profile).set('Authorization', token)
 
       expect(res.status).toBe(400)
       expect(res.body.errors.profile).toEqual('Profile already exists for this user')
@@ -146,17 +146,46 @@ describe('Profile route', () => {
       }
       await new User(newUser).save()
       const userLogin = await request(server).post('/api/users/login').send({ email: newUser.email, password: newUser.password })
-      const res = await request(server).post(create).send(fakeProfile).set('Authorization', `Bearer ${userLogin.body.token}`)
+      const res = await request(server).post(rootUri).send(fakeProfile).set('Authorization', `Bearer ${userLogin.body.token}`)
 
       expect(res.status).toBe(400)
       expect(res.body.errors.handle).toEqual(`Handle already in use`)
     })
   })
 
+  describe('PUT /api/profile/', () => {
+    it('should return 404 if profile not found', async () => {
+      const newUser = { name: 'test', email: 'test@test.com', password: 'testuser' }
+      await new User(newUser).save()
+      const token = await request(server).post('/api/users/login').send({ email: newUser.email, password: newUser.password })
+      const profile = { ...fakeProfile }
+      profile.handle = 'testhandle'
+      const res = await request(server).put(rootUri).send(profile).set('Authorization', `Bearer ${token.body.token}`)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.profile).toEqual('Profile not found')
+
+    })
+
+    it('should edit the profile', async () => {
+      const profile = { ...fakeProfile }
+      profile.status = 'updated status'
+      profile.website = 'http://fake.com'
+      profile.social = { twitter: 'https://twitter.com/test' }
+      const res = await request(server).put(rootUri).send(profile).set('Authorization', token)
+
+      expect(res.status).toBe(200)
+      expect(res.body.handle).toEqual(profile.handle)
+      expect(res.body.status).toEqual(profile.status)
+      expect(res.body.website).toEqual(profile.website)
+      expect(res.body.social).toEqual(profile.social)
+    })
+  })
+
   describe('GET /api/profile/itWorks', () => {
     it('should return 200 and message Profile Works', async () => {
       const res = await request(server).get(test)
-  
+
       expect(res.status).toEqual(200)
       expect(res.body).toExist
       expect(res.body.msg).toEqual('Profile Works')
