@@ -153,6 +153,39 @@ describe('Profile route', () => {
     })
   })
 
+  describe('GET /api/profile', () => {
+    it('should return the current logged in user profile', async () => {
+      const res = await request(server).get(rootUri).set('Authorization', token)
+      const skillsArray = fakeProfile.skills.split(',').map(skill => skill.trim())
+
+      expect(res.status).toBe(200)
+      expect(res.body.handle).toEqual(fakeProfile.handle)
+      expect(res.body.status).toEqual(fakeProfile.status)
+      expect(res.body.skills).toEqual(skillsArray)
+      expect(res.body.bio).toEqual(fakeProfile.bio)
+    })
+
+    it('should return 404 if no user profile found', async () => {
+      const newUser = {
+        name: 'test user',
+        email: faker.internet.email(),
+        password: faker.internet.password()
+      }
+      await new User(newUser).save()
+      const userToken = await request(server).post('/api/users/login').send({ email: newUser.email, password: newUser.password })
+      const res = await request(server).get(rootUri).set('Authorization', `Bearer ${userToken.body.token}`)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.profile).toEqual('No profile found')
+    })
+
+    it('should return 401 if no token header given', async () => {
+      const res = await request(server).get(rootUri)
+
+      expect(res.status).toBe(401)
+    })
+  })
+
   describe('PUT /api/profile/', () => {
     it('should return 404 if profile not found', async () => {
       const newUser = { name: 'test', email: 'test@test.com', password: 'testuser' }
@@ -164,7 +197,6 @@ describe('Profile route', () => {
 
       expect(res.status).toBe(404)
       expect(res.body.errors.profile).toEqual('Profile not found')
-
     })
 
     it('should edit the profile', async () => {
