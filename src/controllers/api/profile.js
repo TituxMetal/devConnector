@@ -25,6 +25,20 @@ const ProfileController = {
 
     await profile.save()
     await res.status(200).json(profile)
+  },
+  edit: async (req, res, next) => {
+    const profile = await Profile.findOne({ user: req.user.id })
+    
+    if (!profile) {
+      return res.status(404).json({ errors: { profile: 'Profile not found' } })
+    }
+
+    const updatedProfile = await Profile.findOneAndUpdate(
+      { user: req.user.id },
+      { $set: req.body },
+      { new: true }
+    )
+    await res.status(200).json(updatedProfile)
   }
 }
 
