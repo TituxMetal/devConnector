@@ -9,9 +9,7 @@ const ProfileController = {
     const profile = new Profile(data)
     profile.user = req.user.id
 
-    if (typeof profile.skills !== undefined) {
-      profile.skills = req.value.body.skills.split(',').map(skill => skill.trim())
-    }
+    profile.skills = req.value.body.skills.split(',').map(skill => skill.trim())
 
     const isProfile = await Profile.findByUser(profile.user)
     if (isProfile) {
