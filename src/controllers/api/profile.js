@@ -4,6 +4,14 @@ const ProfileController = {
   itWorks: async (req, res, next) => {
     await res.json({ msg: "Profile Works" })
   },
+  current: async (req, res, next) => {
+    const profile = await Profile.findByUser(req.user.id)
+    
+    if (!profile) {
+      return res.status(404).json({ errors: { profile: 'No profile found' } })
+    }
+    await res.status(200).json(profile)
+  },
   create: async (req, res, next) => {
     const data = req.value.body
     const profile = new Profile(data)
