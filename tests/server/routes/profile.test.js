@@ -216,6 +216,29 @@ describe('Profile route', () => {
     })
   })
 
+  describe('GET /api/profile/all', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should return 404 if no user profiles found', async () => {
+      const res = await request(server).get(getAll)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.profile).toEqual('There are no profiles')
+    })
+
+    it('should return all profiles', async () => {
+      for (let i = 0; i < users.length; ++i) {
+        await createProfile(users[i].id, 'test' + i)
+      }
+
+      const res = await request(server).get(getAll)
+
+      expect(res.status).toBe(200)
+      expect(res.body.length).toBe(profiles.length)
+    })
+  })
+
   describe('PUT /api/profile/', () => {
     beforeAll(async () => profiles = [])
     afterAll(async () => await dropCollection('profiles'))
