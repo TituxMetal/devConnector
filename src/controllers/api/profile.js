@@ -12,6 +12,15 @@ const ProfileController = {
     }
     await res.status(200).json(profile)
   },
+  all: async (req, res, next) => {
+    const profiles = await Profile.find().populate('user', [ 'name' ])
+
+    if (profiles.length === 0) {
+      return res.status(404).json({ errors: { profile: 'There are no profiles' } })
+    }
+
+    await res.status(200).json(profiles)
+  },
   create: async (req, res, next) => {
     const data = req.value.body
     const profile = new Profile(data)
