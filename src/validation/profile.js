@@ -18,6 +18,15 @@ const schemas = {
     location: Joi.string().optional().min(3).label('Location field').trim(),
     company: Joi.string().optional().min(3).label('Company field').trim(),
     githubaccount: Joi.string().optional().min(3).label('Githubaccount field').trim()
+  }),
+  experience: Joi.object().keys({
+    title: Joi.string().min(3).max(40).required().label('Title field').trim(),
+    location: Joi.string().min(3).max(40).optional().label('Location field').trim(),
+    company: Joi.string().min(3).max(40).required().label('Company field').trim(),
+    from: Joi.date().required().label('From field'),
+    to: Joi.date().optional().label('To field'),
+    current: Joi.boolean().optional().label('Current field'),
+    description: Joi.string().min(3).optional().label('Description field').trim()
   })
 }
 
