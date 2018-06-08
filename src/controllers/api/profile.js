@@ -31,6 +31,20 @@ const ProfileController = {
 
     await res.status(200).json(profile)
   },
+  experience: async (req, res, next) => {
+    const profile = await Profile.findOne({ user: req.user.id })
+    
+    if (!profile) {
+      return res.status(404).json({ errors: { profile: 'A profile must be created before adding experience' } })
+    }
+
+    const newExperience = { ...req.body }
+    profile.experience.unshift(newExperience)
+
+    await profile.save()
+
+    await res.status(200).json(profile)
+  },
   user: async (req, res, next) => {
     const profile = await Profile.findByUser(req.params.userId)
 
