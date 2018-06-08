@@ -11,6 +11,8 @@ const passportJWT = passport.authenticate('jwt', { session: false })
 router.post('/', passportJWT, validateProfile, ProfileController.create)
 router.put('/', passportJWT, validateProfile, ProfileController.edit)
 router.get('/', passportJWT, ProfileController.current)
+router.get('/handle/:handle', ProfileController.handle)
+router.get('/user/:userId', ProfileController.user)
 router.get('/all', ProfileController.all)
 router.get('/itWorks', ProfileController.itWorks)
 
