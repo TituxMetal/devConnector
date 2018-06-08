@@ -5,10 +5,12 @@ const passportConf = require('../../passport/strategy')
 
 const { schemas } = require('../../validation/profile')
 const validateProfile = require('../../middlewares/validateBody')(schemas.profile)
+const validateExperience = require('../../middlewares/validateBody')(schemas.experience)
 const ProfileController = require('../../controllers/api/profile')
 const passportJWT = passport.authenticate('jwt', { session: false })
 
 router.post('/', passportJWT, validateProfile, ProfileController.create)
+router.post('/experience', passportJWT, validateExperience, ProfileController.experience)
 router.put('/', passportJWT, validateProfile, ProfileController.edit)
 router.get('/', passportJWT, ProfileController.current)
 router.get('/handle/:handle', ProfileController.handle)
