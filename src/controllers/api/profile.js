@@ -21,6 +21,25 @@ const ProfileController = {
 
     await res.status(200).json(profiles)
   },
+  handle: async (req, res, next) => {
+    const handle = req.params.handle
+    const profile = await Profile.findOne({ handle }).populate('user', [ 'name' ])
+
+    if (!profile) {
+      return res.status(404).json({ errors: { handle: 'There is no profile with this handle' } })
+    }
+
+    await res.status(200).json(profile)
+  },
+  user: async (req, res, next) => {
+    const profile = await Profile.findByUser(req.params.userId)
+
+    if (!profile) {
+      return res.status(404).json({ errors: { user: 'There is no profile for this user' } })
+    }
+
+    await res.status(200).json(profile)
+  },
   create: async (req, res, next) => {
     const data = req.value.body
     const profile = new Profile(data)
