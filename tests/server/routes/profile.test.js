@@ -18,6 +18,7 @@ describe('Profile route', () => {
   const getAll = `${uri}/all`
   const getHandle = `${uri}/handle/`
   const getUser = `${uri}/user/`
+  const postExp = `${uri}/experience`
 
   const dropDatabase = async () => {
     await mongoose.connection.dropDatabase()
@@ -182,6 +183,105 @@ describe('Profile route', () => {
 
       expect(res.status).toBe(400)
       expect(res.body.errors.handle).toEqual(`Handle already in use`)
+    })
+  })
+
+  describe('POST /api/profile/experience', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should return 401 if no token given', async () => {
+      await createUser()
+      const experience = {
+        title: 'Experience title',
+        company: faker.company.companyName(),
+        location: faker.address.city(),
+        from: faker.date.past(5, new Date()),
+        current: true,
+        description: faker.lorem.paragraph()
+      }
+      const user = users[users.length - 1]
+      const res = await request(server).post(postExp).send(experience)
+
+      expect(res.status).toBe(401)
+    })
+
+    it('should return 404 if no profile exists', async () => {
+      await createUser()
+      const experience = {
+        title: 'Experience title',
+        company: faker.company.companyName(),
+        location: faker.address.city(),
+        from: faker.date.past(5, new Date()),
+        current: true,
+        description: faker.lorem.paragraph()
+      }
+      const user = users[users.length - 1]
+      const token = await request(server).post('/api/users/login').send({ email: user.email, password: userPassword })
+      const res = await request(server).post(postExp).send(experience).set('Authorization', `Bearer ${token.body.token}`)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.profile).toEqual('A profile must be created before adding experience')
+    })
+
+    it('should return 400 if missing required fields', async () => {
+      const userId = users[0].id
+      await createProfile(userId, 'test')
+      const experience = {
+        current: true,
+        description: faker.lorem.paragraph()
+      }
+      const res = await request(server).post(postExp).send(experience).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.title).toEqual(`"Title field" is required`)
+      expect(res.body.errors.company).toEqual(`"Company field" is required`)
+      expect(res.body.errors.from).toEqual(`"From field" is required`)
+    })
+
+    it('should return 400 if invalid data given', async () => {
+      const userId = users[0].id
+      await createProfile(userId, 'test')
+      const experience = {
+        title: 'az',
+        company: 'az',
+        location: 'az',
+        from: 'az',
+        to: 'az',
+        current: 'true',
+        description: 'az'
+      }
+      const res = await request(server).post(postExp).send(experience).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.title).toEqual(`"Title field" length must be at least 3 characters long`)
+      expect(res.body.errors.location).toEqual(`"Location field" length must be at least 3 characters long`)
+      expect(res.body.errors.company).toEqual(`"Company field" length must be at least 3 characters long`)
+      expect(res.body.errors.from).toEqual(`"From field" must be a number of milliseconds or valid date string`)
+      expect(res.body.errors.to).toEqual(`"To field" must be a number of milliseconds or valid date string`)
+      expect(res.body.errors.description).toEqual(`"Description field" length must be at least 3 characters long`)
+    })
+
+    it('should add an experience in the current logged in user profile', async () => {
+      const userId = users[0].id
+      await createProfile(userId, 'test')
+      const experience = {
+        title: 'Experience title',
+        company: faker.company.companyName(),
+        location: faker.address.city(),
+        from: faker.date.past(5, new Date()),
+        current: true,
+        description: faker.lorem.paragraph()
+      }
+      const res = await request(server).post(postExp).send(experience).set('Authorization', token)
+      
+      expect(res.status).toBe(200)
+      expect(res.body.experience[0].title).toBe(experience.title)
+      expect(res.body.experience[0].company).toBe(experience.company)
+      expect(res.body.experience[0].location).toBe(experience.location)
+      expect(res.body.experience[0].from).not.toBeUndefined()
+      expect(res.body.experience[0].current).toBe(experience.current)
+      expect(res.body.experience[0].description).toBe(experience.description)
     })
   })
 
