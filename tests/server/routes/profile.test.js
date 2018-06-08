@@ -16,6 +16,8 @@ describe('Profile route', () => {
   const uri = '/api/profile'
   const test = `${uri}/itWorks`
   const getAll = `${uri}/all`
+  const getHandle = `${uri}/handle/`
+  const getUser = `${uri}/user/`
 
   const dropDatabase = async () => {
     await mongoose.connection.dropDatabase()
@@ -213,6 +215,52 @@ describe('Profile route', () => {
       const res = await request(server).get(uri)
 
       expect(res.status).toBe(401)
+    })
+  })
+
+  describe('GET /api/profile/handle/:handle', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should return the profile with the given handle', async () => {
+      const handle = 'testHandle'
+      const user = users[0]
+      await createProfile(user.id, handle)
+      const res = await request(server).get(getHandle + handle)
+
+      expect(res.status).toBe(200)
+      expect(res.body.handle).toEqual(handle)
+    })
+
+    it('should return 404 if given handle was not found', async () => {
+      const handle = 'notFoundHandle'
+      const res = await request(server).get(getHandle + handle)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.handle).toEqual('There is no profile with this handle')
+    })
+  })
+
+  describe('GET /api/profile/user/:userId', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should return the profile with the given userId', async () => {
+      const user = users[0]
+      await createProfile(user.id, 'handle')
+      const res = await request(server).get(getUser + user.id)
+
+      expect(res.status).toBe(200)
+      expect(res.body.user).toEqual(user.id)
+    })
+
+    it('should return 404 if given userId was not found', async () => {
+      await createUser()
+      const userId = users[users.length - 1].id
+      const res = await request(server).get(getUser + userId)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.user).toEqual('There is no profile for this user')
     })
   })
 
