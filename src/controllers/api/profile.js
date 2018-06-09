@@ -105,6 +105,13 @@ const ProfileController = {
   delete: async (req, res, next) => {
     await Profile.findOneAndRemove({ user: req.user.id })
     await res.status(204).json()
+  },
+  removeExp: async (req, res, next) => {
+    const profile = await Profile.findByUser(req.user.id)
+    profile.experience = profile.experience.filter(experience => experience.id !== req.params.experienceId)
+
+    await profile.save()
+    await res.status(200).json(profile)
   }
 }
 
