@@ -19,6 +19,7 @@ describe('Profile route', () => {
   const getHandle = `${uri}/handle/`
   const getUser = `${uri}/user/`
   const postExp = `${uri}/experience`
+  const postEdu = `${uri}/education`
 
   const dropDatabase = async () => {
     await mongoose.connection.dropDatabase()
@@ -274,7 +275,7 @@ describe('Profile route', () => {
         description: faker.lorem.paragraph()
       }
       const res = await request(server).post(postExp).send(experience).set('Authorization', token)
-      
+
       expect(res.status).toBe(200)
       expect(res.body.experience[0].title).toBe(experience.title)
       expect(res.body.experience[0].company).toBe(experience.company)
@@ -282,6 +283,103 @@ describe('Profile route', () => {
       expect(res.body.experience[0].from).not.toBeUndefined()
       expect(res.body.experience[0].current).toBe(experience.current)
       expect(res.body.experience[0].description).toBe(experience.description)
+    })
+  })
+
+  describe('POST /api/profile/education', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should return 401 if no token given', async () => {
+      await createUser()
+      const newEducation = {
+        school: 'School name',
+        degree: 'Education degree',
+        fieldofstudy: 'Field of study',
+        description: faker.lorem.paragraph(),
+        from: faker.date.past(5, new Date())
+      }
+      const res = await request(server).post(postEdu).send(newEducation)
+
+      expect(res.status).toBe(401)
+    })
+
+    it('should return 404 if no profile exists', async () => {
+      await createUser()
+      const newEducation = {
+        school: 'School name',
+        degree: 'Education degree',
+        fieldofstudy: 'Field of study',
+        description: faker.lorem.paragraph(),
+        from: faker.date.past(5, new Date())
+      }
+      const user = users[users.length - 1]
+      const token = await request(server).post('/api/users/login').send({ email: user.email, password: userPassword })
+      const res = await request(server).post(postEdu).send(newEducation).set('Authorization', `Bearer ${token.body.token}`)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.profile).toEqual('A profile must be created before adding education')
+    })
+
+    it('should return 400 if missing required field', async () => {
+      const userId = users[0].id
+      await createProfile(userId, 'test')
+      const newEducation = {
+        current: true,
+        description: faker.lorem.paragraph()
+      }
+      const res = await request(server).post(postEdu).send(newEducation).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.school).toEqual(`"School field" is required`)
+      expect(res.body.errors.degree).toEqual(`"Degree field" is required`)
+      expect(res.body.errors.fieldofstudy).toEqual(`"Field of study field" is required`)
+      expect(res.body.errors.from).toEqual(`"From field" is required`)
+    })
+
+    it('should return 400 if invalid data given', async () => {
+      const userId = users[0].id
+      await createProfile(userId, 'test')
+      const newEducation = {
+        school: 'az',
+        degree: 'az',
+        fieldofstudy: 'az',
+        from: 'az',
+        to: 'az',
+        current: 'az',
+        description: 'az'
+      }
+      const res = await request(server).post(postEdu).send(newEducation).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.school).toEqual(`"School field" length must be at least 3 characters long`)
+      expect(res.body.errors.degree).toEqual(`"Degree field" length must be at least 3 characters long`)
+      expect(res.body.errors.fieldofstudy).toEqual(`"Field of study field" length must be at least 3 characters long`)
+      expect(res.body.errors.current).toEqual(`"Current field" must be a boolean`)
+      expect(res.body.errors.from).toEqual(`"From field" must be a number of milliseconds or valid date string`)
+      expect(res.body.errors.to).toEqual(`"To field" must be a number of milliseconds or valid date string`)
+      expect(res.body.errors.description).toEqual(`"Description field" length must be at least 3 characters long`)
+    })
+
+    it('should add an education in the current logged in user profile', async () => {
+      const userId = users[0].id
+      await createProfile(userId, 'test')
+      const newEducation = {
+        school: 'School name',
+        degree: 'Education degree',
+        fieldofstudy: 'Field of study',
+        description: faker.lorem.paragraph(),
+        from: faker.date.past(5, new Date())
+      }
+      const res = await request(server).post(postEdu).send(newEducation).set('Authorization', token)
+
+      expect(res.status).toBe(200)
+      expect(res.body.education[0].school).toBe(newEducation.school)
+      expect(res.body.education[0].degree).toBe(newEducation.degree)
+      expect(res.body.education[0].fieldofstudy).toBe(newEducation.fieldofstudy)
+      expect(res.body.education[0].from).not.toBeUndefined()
+      expect(res.body.education[0].current).toBe(false)
+      expect(res.body.education[0].description).toBe(newEducation.description)
     })
   })
 
