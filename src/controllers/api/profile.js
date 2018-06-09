@@ -101,6 +101,10 @@ const ProfileController = {
       { new: true }
     )
     await res.status(200).json(updatedProfile)
+  },
+  delete: async (req, res, next) => {
+    await Profile.findOneAndRemove({ user: req.user.id })
+    await res.status(204).json()
   }
 }
 
