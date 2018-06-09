@@ -524,6 +524,22 @@ describe('Profile route', () => {
     })
   })
 
+  describe('DELETE /api/profile', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should delete the profile from the current logged in user', async () => {
+      const user = users[0]
+      await createProfile(user.id, 'test')
+      const res = await request(server).delete(uri).set('Authorization', token)
+      const profile = await Profile.findByUser(user.id)
+
+      expect(res.status).toBe(204)
+      expect(res.body).toEqual({})
+      expect(profile).toBeNull()
+    })
+  })
+
   describe('GET /api/profile/itWorks', () => {
     it('should return 200 and message Profile Works', async () => {
       const res = await request(server).get(test)
