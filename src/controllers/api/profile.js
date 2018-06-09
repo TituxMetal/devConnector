@@ -112,6 +112,13 @@ const ProfileController = {
 
     await profile.save()
     await res.status(200).json(profile)
+  },
+  removeEdu: async (req, res, next) => {
+    const profile = await Profile.findByUser(req.user.id)
+    profile.education = profile.education.filter(education => education.id !== req.params.educationId)
+
+    await profile.save()
+    await res.status(200).json(profile)
   }
 }
 
