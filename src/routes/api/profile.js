@@ -15,6 +15,7 @@ router.post('/experience', passportJWT, validateExperience, ProfileController.ex
 router.post('/education', passportJWT, validateEducation, ProfileController.education)
 router.put('/', passportJWT, validateProfile, ProfileController.edit)
 router.delete('/', passportJWT, ProfileController.delete)
+router.delete('/experience/:experienceId', passportJWT, ProfileController.removeExp)
 router.get('/', passportJWT, ProfileController.current)
 router.get('/handle/:handle', ProfileController.handle)
 router.get('/user/:userId', ProfileController.user)
