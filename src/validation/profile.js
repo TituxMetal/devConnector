@@ -27,6 +27,15 @@ const schemas = {
     to: Joi.date().optional().label('To field'),
     current: Joi.boolean().optional().label('Current field'),
     description: Joi.string().min(3).optional().label('Description field').trim()
+  }),
+  education: Joi.object().keys({
+    school: Joi.string().min(3).max(40).required().label('School field').trim(),
+    degree: Joi.string().min(3).max(40).required().label('Degree field').trim(),
+    fieldofstudy: Joi.string().min(3).max(40).required().label('Field of study field').trim(),
+    from: Joi.date().required().label('From field'),
+    to: Joi.date().optional().label('To field'),
+    current: Joi.boolean().optional().label('Current field'),
+    description: Joi.string().min(3).optional().label('Description field').trim()
   })
 }
 
