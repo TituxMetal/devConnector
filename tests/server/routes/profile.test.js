@@ -21,6 +21,7 @@ describe('Profile route', () => {
   const postExp = `${uri}/experience`
   const postEdu = `${uri}/education`
   const deleteExp = `${uri}/experience/`
+  const deleteEdu = `${uri}/education/`
 
   const dropDatabase = async () => {
     await mongoose.connection.dropDatabase()
@@ -562,6 +563,30 @@ describe('Profile route', () => {
       
       expect(res.status).toBe(200)
       expect(res.body.experience.length).toEqual(profile.experience.length - 1)
+    })
+  })
+
+  describe('DELETE /api/profile/education/:educationId', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should delete the education from the profile', async () => {
+      const user = users[0]
+      await createProfile(user.id, 'test')
+      const education = {
+        school: 'School name',
+        degree: 'Education degree',
+        fieldofstudy: 'Field of study',
+        description: faker.lorem.paragraph(),
+        from: faker.date.past(5, new Date())
+      }
+      const newEducation = await request(server).post(postEdu).send(education).set('Authorization', token)
+      const edu = newEducation.body.education[0]
+      const profile = await Profile.findByUser(user.id)
+      const res = await request(server).delete(deleteEdu + edu._id).set('Authorization', token)
+      
+      expect(res.status).toBe(200)
+      expect(res.body.education.length).toEqual(profile.education.length - 1)
     })
   })
 
