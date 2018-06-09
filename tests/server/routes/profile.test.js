@@ -20,6 +20,7 @@ describe('Profile route', () => {
   const getUser = `${uri}/user/`
   const postExp = `${uri}/experience`
   const postEdu = `${uri}/education`
+  const deleteExp = `${uri}/experience/`
 
   const dropDatabase = async () => {
     await mongoose.connection.dropDatabase()
@@ -537,6 +538,30 @@ describe('Profile route', () => {
       expect(res.status).toBe(204)
       expect(res.body).toEqual({})
       expect(profile).toBeNull()
+    })
+  })
+
+  describe('DELETE /api/profile/:experienceId', () => {
+    beforeAll(async () => profiles = [])
+    afterAll(async () => await dropCollection('profiles'))
+
+    it('should delete the experience from the profile', async () => {
+      const user = users[0]
+      await createProfile(user.id, 'test')
+      const experience = {
+        title: 'Experience title',
+        company: faker.company.companyName(),
+        location: faker.address.city(),
+        from: faker.date.past(5, new Date()),
+        description: faker.lorem.paragraph()
+      }
+      const newExperience = await request(server).post(postExp).send(experience).set('Authorization', token)
+      const exp = newExperience.body.experience[0]
+      const profile = await Profile.findByUser(user.id)
+      const res = await request(server).delete(deleteExp + exp._id).set('Authorization', token)
+      
+      expect(res.status).toBe(200)
+      expect(res.body.experience.length).toEqual(profile.experience.length - 1)
     })
   })
 
