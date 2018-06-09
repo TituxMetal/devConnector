@@ -541,7 +541,7 @@ describe('Profile route', () => {
     })
   })
 
-  describe('DELETE /api/profile/:experienceId', () => {
+  describe('DELETE /api/profile/experience/:experienceId', () => {
     beforeAll(async () => profiles = [])
     afterAll(async () => await dropCollection('profiles'))
 
