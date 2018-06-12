@@ -23,6 +23,19 @@ const PostController = {
     }
 
     await res.status(200).json(post)
+  },
+
+  create: async (req, res, next) => {
+    const post = await new Post({
+      user: req.user.id,
+      name: req.user.name,
+      avatar: req.body.avatar,
+      text: req.body.text
+    })
+
+    await post.save()
+
+    await res.status(200).json(post)
   }
 }
 
