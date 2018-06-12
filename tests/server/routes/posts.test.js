@@ -60,6 +60,48 @@ describe('Posts routes', () => {
     })
   })
 
+  describe('POST /api/posts', () => {
+    it('should return 401 if no token given', async () => {
+      const post = { ...fakeData.post }
+      const res = await request(server).post(postsRoutes.main).send({})
+
+      expect(res.status).toBe(401)
+    })
+
+    it('should return 400 if missing required fields', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const res = await request(server).post(postsRoutes.main).send({}).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.text).toEqual(`"Text field" is required`)
+    })
+
+    it('should return 400 if invalid data given', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = { name: 'az', avatar: 'az', text: 'az' }
+      const res = await request(server).post(postsRoutes.main).send(post).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.name).toEqual(`"Name field" length must be at least 4 characters long`)
+      expect(res.body.errors.text).toEqual(`"Text field" length must be at least 10 characters long`)
+      expect(res.body.errors.avatar).toEqual(`"Avatar field" must be a valid uri`)
+    })
+
+    it('should create a post in database', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = { ...fakeData.post }
+      const res = await request(server).post(postsRoutes.main).send(post).set('Authorization', token)
+
+      expect(res.status).toBe(200)
+      expect(res.body.user).toEqual(user.id)
+      expect(res.body.name).toEqual(user.name)
+      expect(res.body.text).toEqual(post.text)
+    })
+  })
+
   describe('GET /api/posts/itWorks', () => {
     it('should return 200 and message Posts Works', async () => {
       const res = await request(server).get(postsRoutes.test)

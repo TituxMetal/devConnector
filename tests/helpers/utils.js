@@ -42,6 +42,9 @@ const fakeData = {
     fieldofstudy: 'Field of study',
     from: faker.date.past(5, new Date()),
     description: faker.lorem.paragraph()
+  },
+  post: {
+    text: faker.lorem.paragraph()
   }
 }
 
