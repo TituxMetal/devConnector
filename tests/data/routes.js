@@ -18,5 +18,10 @@ const profileRoutes = {
   deleteExperience: `${profileUri}/experience/`,
   deleteEducation: `${profileUri}/education/`
 }
+const postsUri = '/api/posts'
+const postsRoutes = {
+  main: postsUri,
+  test: `${postsUri}/itWorks`
+}
 
-module.exports = { usersRoutes, profileRoutes }
+module.exports = { usersRoutes, profileRoutes, postsRoutes }
