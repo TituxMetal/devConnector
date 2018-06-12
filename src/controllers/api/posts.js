@@ -1,8 +1,8 @@
 const Post = require('../../models/Post')
 
 const PostController = {
-  itWorks: (req, res, next) => {
-    return res.status(200).json({ msg: "Posts Works" })
+  itWorks: async (req, res, next) => {
+    await res.status(200).json({ msg: "Posts Works" })
   },
 
   getAll: async (req, res, next) => {
@@ -12,7 +12,17 @@ const PostController = {
       return res.status(404).json({ errors: { posts: 'There are no posts' } })
     }
 
-    return res.status(200).json(posts)
+    await res.status(200).json(posts)
+  },
+
+  getId: async (req, res, next) => {
+    const post = await Post.findById(req.params.postId)
+
+    if (!post) {
+      return res.status(404).json({ errors: { post: 'There is no post' } })
+    }
+
+    await res.status(200).json(post)
   }
 }
 
