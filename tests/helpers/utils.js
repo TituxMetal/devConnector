@@ -10,11 +10,13 @@ const server = require(root + 'server')
 const { usersRoutes, pofileRoutes } = require(data + 'routes')
 const User = require(root + 'models/User')
 const Profile = require(root + 'models/Profile')
+const Post = require(root + 'models/Post')
 
 const fakeData = {
   token: 'Bearer ',
   users: [],
   profiles: [],
+  posts: [],
   userPassword: faker.internet.password(),
   user: {
     name: faker.internet.userName(),
@@ -78,6 +80,17 @@ const Utils = {
     }).save()
     fakeData.profiles.push(profile)
     return profile
+  },
+
+  createPost: async (userId, userName) => {
+    const post = await new Post({
+      user: userId,
+      text: faker.lorem.paragraph(),
+      name: userName,
+      avatar: 'https://gravatar.com/avatar'
+    }).save()
+    fakeData.posts.push(post)
+    return post
   }
 }
 

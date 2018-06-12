@@ -3,11 +3,41 @@ const path = require('path')
 
 const root = path.join(__dirname, '../../../src/')
 const data = path.join(__dirname, '../../data/')
+const helpers = path.join(__dirname, '../../helpers/')
 
 const server = require(root + 'server')
 const { postsRoutes } = require(data + 'routes')
+const { Utils , fakeData } = require(helpers + 'utils')
 
-describe('GET /api/posts/itWorks', () => {
+describe('Posts routes', () => {
+  afterAll(async () => {
+    await Utils.dropDatabase()
+    console.log('\n Test database dropped')
+    return mongoose.connection.close()
+  })
+
+  describe('GET /api/posts', () => {
+    afterAll(async () => await Utils.dropCollection('posts'))
+
+    it('should return 404 if no posts found', async () => {
+      const res = await request(server).get(postsRoutes.main)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.posts).toEqual('There are no posts')
+    })
+
+    it('should return all posts', async () => {
+      const user = await Utils.createUser()
+      await Utils.createPost(user.id, user.name)
+      await Utils.createPost(user.id, user.name)
+      await Utils.createPost(user.id, user.name)
+      const res = await request(server).get(postsRoutes.main)
+  
+      expect(res.status).toBe(200)
+      expect(res.body.length).toEqual(fakeData.posts.length)
+    })
+  })
+
   describe('GET /api/posts/itWorks', () => {
     it('should return 200 and message Posts Works', async () => {
       const res = await request(server).get(postsRoutes.test)
