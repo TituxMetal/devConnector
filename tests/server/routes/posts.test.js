@@ -38,6 +38,28 @@ describe('Posts routes', () => {
     })
   })
 
+  describe('GET /api/posts/:postId', () => {
+    it('should return 404 if no post with the given postId', async () => {
+      const postId = fakeData.posts[0].id
+      const res = await request(server).get(postsRoutes.getId + postId)
+      
+      expect(res.status).toBe(404)
+      expect(res.body.errors.post).toEqual('There is no post')
+    })
+
+    it('should return post with the given postId', async () => {
+      const user = await Utils.createUser()
+      const post = await Utils.createPost(user.id, user.name)
+      const res = await request(server).get(postsRoutes.getId + post.id)
+
+      expect(res.status).toBe(200)
+      expect(res.body.user).toEqual(user.id)
+      expect(res.body.text).toEqual(post.text)
+      expect(res.body.name).toEqual(post.name)
+      expect(res.body.avatar).toEqual(post.avatar)
+    })
+  })
+
   describe('GET /api/posts/itWorks', () => {
     it('should return 200 and message Posts Works', async () => {
       const res = await request(server).get(postsRoutes.test)
