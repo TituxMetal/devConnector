@@ -5,5 +5,6 @@ const PostController = require('../../controllers/api/posts')
 
 router.get('/', PostController.getAll)
 router.get('/itWorks', PostController.itWorks)
+router.get('/:postId', PostController.getId)
 
 module.exports = router
