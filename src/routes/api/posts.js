@@ -3,6 +3,7 @@ const router = require('express-promise-router')()
 
 const PostController = require('../../controllers/api/posts')
 
+router.get('/', PostController.getAll)
 router.get('/itWorks', PostController.itWorks)
 
 module.exports = router
