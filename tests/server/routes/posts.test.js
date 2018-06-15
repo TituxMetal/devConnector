@@ -102,6 +102,41 @@ describe('Posts routes', () => {
     })
   })
 
+  describe('POST /api/posts/like/:postId', () => {
+    it('should return 401 if no token given', async () => {
+      const user = await Utils.createUser()
+      const post = await Utils.createPost(user.id, user.name)
+      const res = await request(server).delete(postsRoutes.deleteId + post.id)
+
+      expect(res.status).toBe(401)
+      expect(res.body).toEqual({})
+    })
+
+    it('should return 404 if no post', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const res = await request(server).delete(postsRoutes.deleteId + '1234').set('Authorization', token)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.post).toEqual('Post not found')
+    })
+
+    it('should add/remove like on a post', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = await Utils.createPost(user.id, user.name)
+      const res = await request(server).post(postsRoutes.like + post.id).set('Authorization', token)
+
+      expect(res.status).toBe(200)
+      expect(res.body.likes.length).toEqual(1)
+
+      const unlike = await request(server).post(postsRoutes.like + post.id).set('Authorization', token)
+
+      expect(unlike.status).toBe(200)
+      expect(unlike.body.likes.length).toEqual(0)
+    })
+  })
+
   describe('DELETE /api/posts/:postId', () => {
     it('should return 401 if no token given', async () => {
       const user = await Utils.createUser()
