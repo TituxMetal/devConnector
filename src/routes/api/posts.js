@@ -10,6 +10,7 @@ const passportJWT = passport.authenticate('jwt', { session: false })
 
 router.get('/', PostController.getAll)
 router.post('/', passportJWT, validatePost, PostController.create)
+router.delete('/:postId', passportJWT, PostController.delete)
 router.get('/itWorks', PostController.itWorks)
 router.get('/:postId', PostController.getId)
 
