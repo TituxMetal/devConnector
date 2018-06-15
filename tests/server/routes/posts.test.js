@@ -102,6 +102,49 @@ describe('Posts routes', () => {
     })
   })
 
+  describe('DELETE /api/posts/:postId', () => {
+    it('should return 401 if no token given', async () => {
+      const user = await Utils.createUser()
+      const post = await Utils.createPost(user.id, user.name)
+      const res = await request(server).delete(postsRoutes.deleteId + post.id)
+
+      expect(res.status).toBe(401)
+      expect(res.body).toEqual({})
+    })
+
+    it('should return 403 if post is from another user', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const anotherUser = await Utils.createUser()
+      const post = await Utils.createPost(anotherUser.id, anotherUser.name)
+      const res = await request(server).delete(postsRoutes.deleteId + post.id).set('Authorization', token)
+
+      expect(res.status).toBe(403)
+      expect(res.body.errors.notAuthorized).toEqual('User not authorized')
+    })
+
+    it('should return 404 if post not found', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const res = await request(server).delete(postsRoutes.deleteId + '123').set('Authorization', token)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.post).toEqual('Post not found')
+    })
+
+    it('should delete a post by the given postId', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = await Utils.createPost(user.id, user.name)
+      const res = await request(server).delete(postsRoutes.deleteId + post.id).set('Authorization', token)
+      const p = await Post.findById(post.id)
+      
+      expect(res.status).toBe(204)
+      expect(res.body).toEqual({})
+      expect(p).toBeNull()
+    })
+  })
+
   describe('GET /api/posts/itWorks', () => {
     it('should return 200 and message Posts Works', async () => {
       const res = await request(server).get(postsRoutes.test)

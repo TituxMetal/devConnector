@@ -22,6 +22,7 @@ const postsUri = '/api/posts'
 const postsRoutes = {
   main: postsUri,
   getId: `${postsUri}/`,
+  deleteId: `${postsUri}/`,
   test: `${postsUri}/itWorks`
 }
 
