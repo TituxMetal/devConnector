@@ -38,6 +38,24 @@ const PostController = {
     await res.status(200).json(post)
   },
 
+  comment: async (req, res, next) => {
+    await Post.findById(req.params.postId)
+      .then(async post => {
+        const comment = new Post({
+          text: req.body.text,
+          name: req.body.name,
+          avatar: req.body.avatar,
+          user: req.user.id
+        })
+
+        post.comments.push(comment)
+        await post.save()
+          .then(post => res.status(200).json(post))
+          .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+      })
+      .catch(err => res.status(404).json({ errors: { post: 'Post not found' } }))
+  },
+
   like: async (req, res, next) => {
     await Post.findById(req.params.postId)
       .then(async post => {
