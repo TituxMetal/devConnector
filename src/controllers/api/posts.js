@@ -36,6 +36,20 @@ const PostController = {
     await post.save()
 
     await res.status(200).json(post)
+  },
+
+  delete: async (req, res, next) => {
+    await Post.findById(req.params.postId)
+      .then(async post => {
+        if (post.user.toString() !== req.user.id) {
+          return res.status(403).json( { errors: { notAuthorized: 'User not authorized' } } )
+        }
+
+        await post.remove()
+          .then(async () => await res.status(204).json({}))
+          .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+      })
+      .catch(err => res.status(404).json({ errors: { post: 'Post not found' } }))
   }
 }
 
