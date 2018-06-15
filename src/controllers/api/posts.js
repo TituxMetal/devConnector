@@ -38,6 +38,20 @@ const PostController = {
     await res.status(200).json(post)
   },
 
+  like: async (req, res, next) => {
+    await Post.findById(req.params.postId)
+      .then(async post => {
+        const postLikes = post.likes.filter(like => like.user.toString() === req.user.id)
+        
+        postLikes.length > 0 ? post.likes.pop({ user: req.user.id }) : post.likes.push({ user: req.user.id })
+
+        await post.save()
+          .then(post => res.status(200).json(post))
+          .catch(err => res.status(500).json({ server: 'Something went wrong' }))
+      })
+      .catch(err => res.status(404).json({ errors: { post: 'No post found' } }))
+  },
+
   delete: async (req, res, next) => {
     await Post.findById(req.params.postId)
       .then(async post => {
