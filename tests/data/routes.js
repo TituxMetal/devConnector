@@ -21,6 +21,7 @@ const profileRoutes = {
 const postsUri = '/api/posts'
 const postsRoutes = {
   main: postsUri,
+  comment: `${postsUri}/comment/`,
   like: `${postsUri}/like/`,
   getId: `${postsUri}/`,
   deleteId: `${postsUri}/`,

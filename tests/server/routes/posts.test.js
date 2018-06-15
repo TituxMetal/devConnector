@@ -102,6 +102,62 @@ describe('Posts routes', () => {
     })
   })
 
+  describe('POST /api/posts/comment/:postId', () => {
+    it('should return 401 if no token given', async () => {
+      const user = await Utils.createUser()
+      const post = await Utils.createPost(user.id, user.name)
+      const comment = { ...fakeData.comment, user: user.id, name: user.name }
+      const res = await request(server).post(postsRoutes.comment + post.id).send(comment)
+
+      expect(res.status).toBe(401)
+      expect(res.body).toEqual({})
+    })
+    
+    it('should return 400 if missing required fields', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = await Utils.createPost(user.id, user.name)
+      const res = await request(server).post(postsRoutes.comment + post.id).send({}).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.text).toEqual(`"Text field" is required`)
+    })
+
+    it('should return 400 if invalid fields given', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = await Utils.createPost(user.id, user.name)
+      const comment = { text: 'az', name: 'az', avatar: 'az' }
+      const res = await request(server).post(postsRoutes.comment + post.id).send(comment).set('Authorization', token)
+
+      expect(res.status).toBe(400)
+      expect(res.body.errors.text).toEqual(`"Text field" length must be at least 10 characters long`)
+      expect(res.body.errors.name).toEqual(`"Name field" length must be at least 4 characters long`)
+      expect(res.body.errors.avatar).toEqual(`"Avatar field" must be a valid uri`)
+    })
+
+    it('should return 404 if no post found', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const comment = { ...fakeData.comment, user: user.id, name: user.name }
+      const res = await request(server).post(postsRoutes.comment + '123').send(comment).set('Authorization', token)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.post).toEqual('Post not found')
+    })
+
+    it('should add a new comment to a post', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = await Utils.createPost(user.id, user.name)
+      const comment = { ...fakeData.comment, user: user.id, name: user.name }
+      const res = await request(server).post(postsRoutes.comment + post.id).send(comment).set('Authorization', token)
+
+      expect(res.status).toBe(200)
+      expect(res.body.comment)
+    })
+  })
+
   describe('POST /api/posts/like/:postId', () => {
     it('should return 401 if no token given', async () => {
       const user = await Utils.createUser()

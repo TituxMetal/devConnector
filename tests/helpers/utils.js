@@ -45,6 +45,10 @@ const fakeData = {
   },
   post: {
     text: faker.lorem.paragraph()
+  },
+  comment: {
+    text: faker.lorem.paragraph(),
+    avatar: 'https://gravatar.com/avatar'
   }
 }
 
