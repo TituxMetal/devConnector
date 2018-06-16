@@ -82,6 +82,29 @@ const PostController = {
           .catch(err => res.status(500).json({ server: 'Something went wrong' }))
       })
       .catch(err => res.status(404).json({ errors: { post: 'Post not found' } }))
+  },
+
+  deleteComment: async (req, res, next) => {
+    await Post.findById(req.params.postId)
+      .then(async post => {
+        const removeIndex = post.comments
+          .map(comment => comment.id.toString())
+          .indexOf(req.params.commentId)
+        
+          if (removeIndex < 0) {
+            return res.status(404).json({ errors: { comment: 'Comment does not exists' } })
+          }
+
+          if (post.comments[removeIndex].user.toString() !== req.user.id) {
+            return res.status(403).json({ errors: { notAuthorized: 'User not authorized' } })
+          }
+
+          post.comments.splice(removeIndex, 1)
+          await post.save()
+            .then(post => res.status(200).json(post))
+            .catch(err => rest.status(500).json({ server: 'Something went wrong' }))
+      })
+      .catch(err => res.status(404).json({ errors: { post: 'Post does not exists' } }))
   }
 }
 
