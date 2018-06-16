@@ -25,6 +25,7 @@ const postsRoutes = {
   like: `${postsUri}/like/`,
   getId: `${postsUri}/`,
   deleteId: `${postsUri}/`,
+  deleteComment: `${postsUri}/comment/`,
   test: `${postsUri}/itWorks`
 }
 

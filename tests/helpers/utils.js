@@ -98,6 +98,19 @@ const Utils = {
     }).save()
     fakeData.posts.push(post)
     return post
+  },
+
+  createComment: async (post, user) => {
+    const comment = {
+      user: user.id,
+      name: user.name,
+      text: faker.lorem.paragraph(),
+      avatar: 'https://gravatar.com/avatar'
+    }
+    post.comments.push(comment)
+    await post.save()
+    const commentIndex = post.comments.length - 1
+    return post.comments[commentIndex]
   }
 }
 

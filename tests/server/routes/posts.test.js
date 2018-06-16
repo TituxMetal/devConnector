@@ -236,6 +236,64 @@ describe('Posts routes', () => {
     })
   })
 
+  describe('DELETE /api/posts/comment/:postId/:commentId', () => {
+    it('should return 401 if no token given', async () => {
+      const user = await Utils.createUser()
+      const post = await Utils.createPost(user.id, user.name)
+      const comment = await Utils.createComment(post, user)
+      const res = await request(server).delete(postsRoutes.deleteComment + `${post.id}/${comment.id}`)
+
+      expect(res.status).toBe(401)
+      expect(res.body).toEqual({})
+    })
+
+    it('should return 403 if user not authorized', async () => {
+      const user1 = await Utils.createUser()
+      const user2 = await Utils.createUser()
+      const token = await Utils.loginUser(user2)
+      const post = await Utils.createPost(user2.id, user2.name)
+      const comment = await Utils.createComment(post, user1)
+      const res = await request(server).delete(postsRoutes.deleteComment + `${post.id}/${comment.id}`).set('Authorization', token)
+
+      expect(res.status).toBe(403)
+      expect(res.body.errors.notAuthorized).toEqual('User not authorized')
+    })
+
+    it('should return 404 if no post found', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const res = await request(server).delete(postsRoutes.deleteComment + '123/123').set('Authorization', token)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.post).toEqual('Post does not exists')
+    })
+
+    it('should return 404 if no comment found', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = await Utils.createPost(user.id, user.name)
+      const res = await request(server).delete(postsRoutes.deleteComment + post.id + '/123').set('Authorization', token)
+
+      expect(res.status).toBe(404)
+      expect(res.body.errors.comment).toEqual('Comment does not exists')
+    })
+
+    it('should delete the comment with the given commentId', async () => {
+      const user = await Utils.createUser()
+      const token = await Utils.loginUser(user)
+      const post = await Utils.createPost(user.id, user.name)
+      const comment = await Utils.createComment(post, user)
+      const res = await request(server).delete(postsRoutes.deleteComment + `${post.id}/${comment.id}`).set('Authorization', token)
+      
+      expect(res.status).toBe(200)
+      expect(res.body.comments.length).toEqual(post.comments.length - 1)
+
+      const com = await Post.findById(post.id)
+
+      expect(com.comments.length).toEqual(post.comments.length - 1)
+    })
+  })
+
   describe('GET /api/posts/itWorks', () => {
     it('should return 200 and message Posts Works', async () => {
       const res = await request(server).get(postsRoutes.test)
