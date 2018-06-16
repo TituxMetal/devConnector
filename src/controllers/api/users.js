@@ -27,7 +27,7 @@ const UserController = {
     const newUser = new User({ name, email, password })
     await newUser.save()
 
-    res.status(200).json({ name: newUser.name, email: newUser.email })
+    res.status(200).json(newUser)
   },
   login: async (req, res, next) => {
     const { email, password } = req.value.body
@@ -49,11 +49,9 @@ const UserController = {
     res.status(200).json({ token })
   },
   current: async (req, res, next) => {
-    return res.status(200).json({
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email
-    })
+    const user = await User.findById(req.user.id)
+
+    await res.status(200).json(user)
   }
 }
 
