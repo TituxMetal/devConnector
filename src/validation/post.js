@@ -1,19 +1,18 @@
-const Validator = require('validator')
-const isEmpty = require('./isEmpty')
+const Joi = require('joi')
 
-const validatePostInput = data => {
-  let errors = {}
-  data.text = !isEmpty(data.text) ? data.text : ''
-
-  if (!Validator.isLength(data.text, { min: 10, max: 300 })) {
-    errors.text = 'Text must be between 10 an 300 characters'
-  }
-
-  if (Validator.isEmpty(data.text)) {
-    errors.text = 'Text field is required'
-  }
-
-  return { errors, isValid: isEmpty(errors) }
+const schemas = {
+  post: Joi.object().keys({
+    user: Joi.string(),
+    text: Joi.string().required().min(10).max(400).label('Text field').trim(),
+    name: Joi.string().optional().min(4).label('Name field').trim(),
+    avatar: Joi.string().optional().uri().label('Avatar field').trim()
+  }),
+  comment: Joi.object().keys({
+    user: Joi.string(),
+    text: Joi.string().required().min(10).max(400).label('Text field').trim(),
+    name: Joi.string().optional().min(4).label('Name field').trim(),
+    avatar: Joi.string().optional().uri().label('Avatar field').trim()
+  })
 }
 
-module.exports = validatePostInput;
+module.exports = { schemas }

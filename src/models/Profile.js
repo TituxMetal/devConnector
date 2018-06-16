@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
+const bcrypt = require('bcryptjs')
 const Schema = mongoose.Schema
 
-// Create Schema
-const ProfileSchema = new Schema({
+const profileSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: 'users'
@@ -33,8 +33,25 @@ const ProfileSchema = new Schema({
     type: String,
     required: true
   },
-  githubusername: {
+  githubaccount: {
     type: String
+  },
+  social: {
+    instagram: {
+      type: String
+    },
+    facebook: {
+      type: String
+    },
+    linkedin: {
+      type: String
+    },
+    twitter: {
+      type: String
+    },
+    youtube: {
+      type: String
+    }
   },
   experience: [
     {
@@ -95,27 +112,18 @@ const ProfileSchema = new Schema({
       }
     }
   ],
-  social: {
-    youtube: {
-      type: String
-    },
-    twitter: {
-      type: String
-    },
-    facebook: {
-      type: String
-    },
-    linkedin: {
-      type: String
-    },
-    instagram: {
-      type: String
-    }
-  },
   date: {
     type: Date,
     default: Date.now
   }
 })
 
-module.exports = Profile = mongoose.model('profile', ProfileSchema)
+profileSchema.statics.findByUser = async user => {
+  try {
+    return await Profile.findOne({ user })
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+module.exports = Profile = mongoose.model('profile', profileSchema)

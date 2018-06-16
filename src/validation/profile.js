@@ -1,34 +1,42 @@
-const Validator = require('validator')
-const isEmpty = require('./isEmpty')
+const Joi = require('joi')
 
-const validateProfileInput = data => {
-  let errors = {}
-  const dataFields = ['handle', 'status', 'skills', 'bio']
-  const siteUrls = ['website', 'youtube', 'twitter', 'facebook', 'linkedin', 'instagram']
-
-  dataFields.forEach(field => {
-    data[field] = !isEmpty(data[field]) ? data[field] : ''
-    if (Validator.isEmpty(data[field])) {
-      const fieldName = field[0].toUpperCase() + field.slice(1)
-      errors[field] = `${fieldName} field is required`
-    }
+const schemas = {
+  profile: Joi.object().keys({
+    user: Joi.string(),
+    handle: Joi.string().min(3).max(40).required().label('Handle field').trim(),
+    status: Joi.string().min(3).required().label('Status field').trim(),
+    skills: Joi.string().min(3).required().label('Skills field').trim(),
+    bio: Joi.string().min(3).required().label('Bio field').trim(),
+    social: {
+      facebook: Joi.string().optional().uri().label('Facebook field').trim(),
+      instagram: Joi.string().optional().uri().label('Instagram field').trim(),
+      linkedin: Joi.string().optional().uri().label('Linkedin field').trim(),
+      twitter: Joi.string().optional().uri().label('Twitter field').trim(),
+      youtube: Joi.string().optional().uri().label('Youtube field').trim()
+    },
+    website: Joi.string().optional().uri().label('Website field').trim(),
+    location: Joi.string().optional().min(3).label('Location field').trim(),
+    company: Joi.string().optional().min(3).label('Company field').trim(),
+    githubaccount: Joi.string().optional().min(3).label('Githubaccount field').trim()
+  }),
+  experience: Joi.object().keys({
+    title: Joi.string().min(3).max(40).required().label('Title field').trim(),
+    location: Joi.string().min(3).max(40).optional().label('Location field').trim(),
+    company: Joi.string().min(3).max(40).required().label('Company field').trim(),
+    from: Joi.date().required().label('From field'),
+    to: Joi.date().optional().label('To field'),
+    current: Joi.boolean().optional().label('Current field'),
+    description: Joi.string().min(3).optional().label('Description field').trim()
+  }),
+  education: Joi.object().keys({
+    school: Joi.string().min(3).max(40).required().label('School field').trim(),
+    degree: Joi.string().min(3).max(40).required().label('Degree field').trim(),
+    fieldofstudy: Joi.string().min(3).max(40).required().label('Field of study field').trim(),
+    from: Joi.date().required().label('From field'),
+    to: Joi.date().optional().label('To field'),
+    current: Joi.boolean().optional().label('Current field'),
+    description: Joi.string().min(3).optional().label('Description field').trim()
   })
-
-  if (!Validator.isLength(data.handle, { min: 4, max: 40 }) && !isEmpty(data.handle)) {
-    errors.handle = 'Handle needs to between 4 and 40 characters'
-  }
-
-  if (!Validator.isLength(data.bio, { min: 4 }) && !isEmpty(data.bio)) {
-    errors.bio = 'Bio needs to be minimum 4 characters'
-  }
-
-  siteUrls.forEach(url => {
-    if (!isEmpty(data[url]) && !Validator.isURL(data[url])) {
-      errors[url] = 'Badly formatted url'
-    }
-  })
-
-  return { errors, isValid: isEmpty(errors) }
 }
 
-module.exports = validateProfileInput;
+module.exports = { schemas }
