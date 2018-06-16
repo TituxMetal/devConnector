@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
+const gravatar = require('gravatar')
 const Schema = mongoose.Schema
 
 const userSchema = new Schema({
@@ -29,8 +30,14 @@ userSchema.pre('save', async function (next) {
   try {
     const salt = await bcrypt.genSalt(10)
     const passwordHash = await bcrypt.hash(this.password, salt)
+    const avatar = gravatar.url(this.email, {
+      s: 200,
+      r: 'pg',
+      d: 'identicon'
+    })
 
     this.password = passwordHash
+    this.avatar = avatar
     next()
   } catch(error) {
     next(error)
