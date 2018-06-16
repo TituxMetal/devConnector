@@ -27,10 +27,12 @@ describe('Users route', () => {
       const user = await Utils.createUser()
       const token = await Utils.loginUser(user)
       const res = await request(server).get(usersRoutes.current).set('Authorization', token)
-
+      
       expect(res.status).toEqual(200)
       expect(res.body.name).toEqual(user.name)
       expect(res.body.email).toEqual(user.email)
+      expect(res.body.avatar).toBeDefined()
+      expect(res.body.avatar).toEqual(user.avatar)
     })
   })
 
@@ -43,6 +45,7 @@ describe('Users route', () => {
       expect(res.body.name).toEqual(user.name)
       expect(res.body.email).toEqual(user.email)
       expect(res.body.password).toNotExist
+      expect(res.body.avatar).toBeDefined()
     })
 
     it('password should be a hashed password', async () => {
@@ -74,7 +77,7 @@ describe('Users route', () => {
       expect(res.body.errors.name).toEqual(`"Name field" length must be at least 4 characters long`)
       expect(res.body.errors.email).toEqual(`"Email field" must be a valid email`)
       expect(res.body.errors.password).toEqual(`"Password field" length must be at least 6 characters long`)
-
+      
       const noUser = await User.findByEmail(invalidUser.email)
       expect(noUser).toBeNull()
     })
@@ -124,7 +127,7 @@ describe('Users route', () => {
       const res = await request(server).post(usersRoutes.login).send(credentials)
       
       expect(res.status).toEqual(200)
-      expect(res.body.token).toExist
+      expect(res.body.token).toBeDefined()
     })
   })
 
