@@ -14,6 +14,7 @@ router.post('/', passportJWT, validatePost, PostController.create)
 router.post('/comment/:postId', passportJWT, validateComment, PostController.comment)
 router.post('/like/:postId', passportJWT, PostController.like)
 router.delete('/:postId', passportJWT, PostController.delete)
+router.delete('/comment/:postId/:commentId', passportJWT, PostController.deleteComment)
 router.get('/itWorks', PostController.itWorks)
 router.get('/:postId', PostController.getId)
 
